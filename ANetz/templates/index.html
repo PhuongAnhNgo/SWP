@@ -1,0 +1,26 @@
+
+
+ {% extends "base.html" %}
+
+{% block content %}
+
+<div class="centering">
+<form class="first_choice" method="post">
+  <ul class="wrapper">
+    <li class="icon Authors">
+      <span class="tooltip">Co-authorship network</span>
+      <span><button type="submit" name="choice" value="Author" class="fa fa-users"></span>
+    </li>
+    <li class="icon Articles">
+      <span class="tooltip">Article network</span>
+      <span><button type="submit" name="choice" value="ANet" class="fa fa-files-o"></span>
+    </li>
+    <li class="icon articlesSearch">
+      <span class="tooltip">Article Search</span>
+      <span><button type="submit" name="choice" value="Article" class="fa fa-file-text-o"></span>
+    </li>
+  </ul>
+</form>
+</div>
+
+{% endblock %}

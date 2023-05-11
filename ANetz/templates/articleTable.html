@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div id="mySidenav" class="sidenav">
+    <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+    <h4 style="margin-left: 20px;"  class="searchTxt">Advanced search</h4>
+    <form id="formSearch" method="POST" action="" enctype="multipart/form-data">
+        
+        <div>
+            <div class="searchText">
+                <label for="author" class="searchTxt">Author:</label><br>
+                <input type="text" id="author" name="author" placeholder="Author name or orchID" maxlength="35" size="35"><br><br>
+            </div>
+            <div class="searchText">
+                <label for="journal" class="searchTxt">Journal or Conference:</label><br>
+                <input type="text" id="journal" name="journal" placeholder="Journal or Conference name, ISSN or Doi"  maxlength="35" size="35"><br><br>
+            </div>     
+            <div class="searchText">
+                <label for="title" class="searchTxt">Article title:</label><br>
+                <input type="text" id="title" name="title" placeholder="Article title or doi"  maxlength="35" size="35"><br><br>
+            </div>      
+            <div class="searchText">
+                <label for="publisher" class="searchTxt">Publisher:</label><br>
+                <input type="text" id="publisher" name="publisher" placeholder="Publisher eg. IEEE"   maxlength="35" size="35" ><br><br>
+            </div>   
+            <div class="searchText">
+                <label for="hvon" class="searchTxt">H index from:</label>
+                <input type="text" id="hvon" name="hvon" placeholder="10" maxlength="4" size="4" >
+                <label for="hbis" class="searchTxt">to:</label>
+                <input type="text" id="hbis" name="hbis" placeholder="50" maxlength="4" size="4"><br><br>
+            </div>   
+            <div class="searchText">
+                <label for="sjrvon" class="searchTxt">SJR-index from:</label>
+                <input type="text" id="sjrvon" name="sjrvon" placeholder="0,65" maxlength="4" size="4">
+                <label for="sjrbis" class="searchTxt">to:</label>
+                <input type="text" id="sjrbis" name="sjrbis" placeholder="0,9" maxlength="4" size="4"><br><br>
+            </div>   
+        </div>
+       </form>
+  </div>
+
+<span style="font-size:30px;cursor:pointer" onclick="openNav()">&#x1F50E;&#xFE0E; Advanced search</span>
+
+<div class="authCentering" style="display: none">
+    <div class="messagepop authPop">
+        <table id="authorTab" class="table table-bordered" style="width: 100%">
+        <thead>
+            <tr>
+            <th>orchID</th>
+            <th>Author</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+        </table>
+        <div class="icons">
+        <button type ="button" title="close Authors" name="closeAuthors" id="closeAuthors" value="closeAuthors" ><img src="{{ url_for('static', filename='css/icons/cancel.svg') }}" alt="close"/></button>
+        </div>
+    </div>
+</div>
+
+
+  <table id="data" class="table table-bordered" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Authors</th>
+        <th>Doi</th> 
+        <th>Title</th>
+        <th>Year</th>
+        <th>url</th>
+      </tr>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+
+    $(document).ready(function () {
+
+      var BGBMCoretable = $('#data').DataTable({
+      ajax: '/api/data',
+      ServerSide: true,
+      processing:true,
+        columns: [
+          {data: null, defaultContent: '<button type ="button" title="get Authors" name="getAuthors" class="getAuthors, tableIcons" value="Get authors"><img src="{{ url_for("static", filename="css/icons/get_authors.svg") }}" alt="getAuthors"/></button>'},
+          {data: 'doi'},
+          {data: 'title'},
+          {data: 'year'},
+          {data: 'url'},
+        ],
+      });
+
+$('#data tbody').on('click', '.getAuthors', function () {
+    if($(this).hasClass('selectedpop')) {
+     deselectRel($(this));
+     document.getElementById('content').style.opacity = "100";
+      document.getElementById('content').style.pointerEvents = "auto";
+      $('.authCentering').hide();                
+    } else {
+      ('authCentering').css('display', 'flex'); 
+      document.getElementById('content').style.opacity = "50%";
+      document.getElementById('content').style.pointerEvents = "none";
+      var ID = BGBMCoretable.row($(this).parents('tr')).data().doi;
+        const s = JSON.stringify(["get_authors", ID]);  
+        $.ajax({
+            url:"{{url_for('anetz.Articles')}}",
+            type:"POST",
+            contentType: "application/json",
+            data: JSON.stringify(s),
+            complete: function(end){
+              authorsTable.ajax.reload();           
+            },
+          }); 
+     $(this).addClass('selectedpop');
+     $('.authPop').slideFadeToggle();
+    }
+    return false;
+  });
+  
+//authors table
+  var authorsTable = $('#authorTab').DataTable({
+      ajax: '/api/get_authors',
+      ServerSide: true,
+      processing:true,
+      
+      columns: [
+        {data: 'orchID'},
+        {data: 'Author'},
+      ],
+    }); 
+
+    function deselectAuth(e) {
+  $('.authPop').slideFadeToggle(function() {
+    e.removeClass('selectedpop');
+    document.getElementById('content').style.opacity = "100";
+    document.getElementById('content').style.pointerEvents = "auto";
+  });    
+}
+
+$('#closeAuthors').on('click', function() {
+  deselectAuth($('.getAuthors'));
+  });
+
+
+    });
+
+function openNav() {
+  document.getElementById("mySidenav").style.width = "400px";
+}
+
+function closeNav() {
+  document.getElementById("mySidenav").style.width = "0";
+}
+  </script>
+
+{% endblock %}

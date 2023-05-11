@@ -1,0 +1,124 @@
+<!doctype html>
+  <head>
+    <title>{{ title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap5.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stylesheet.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+  <body>
+    <header>
+        <div class="top">
+        <a href="{{ url_for('anetz.index') }}"><i class="fa fa-home home" style="font-size: 50px; margin: 8px; color:#000;"></i></a>
+      </div>
+
+    </header>
+    <div class="flash"></div>
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/functions.js') }}" async></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap5.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+    <script src="https://nightly.datatables.net/js/jquery.dataTables.js"></script>
+
+  </body>
+
+<!--{% block content %}-->
+
+  <table id="data" class="table table-bordered" style="width: 100%">
+    <thead>
+      <tr>
+        <th>Authors</th>
+        <th>Doi</th> 
+        <th>Title</th>
+        <th>Year</th>
+        <th>url</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+<!--{% endblock %}-->
+
+<!--{% block scripts %}-->
+  <script>
+
+    $(document).ready(function () {
+
+      var BGBMCoretable = $('#data').DataTable({
+      ajax: '/api/data',
+      ServerSide: true,
+      processing:true,
+        columns: [
+          {data: null, defaultContent: '<button type ="button" title="get Authors" name="getAuthors" class="getAuthors, tableIcons" value="Get authors"><img src="{{ url_for("static", filename="get_authors.svg") }}" alt="getAuthors"/></button>'},
+          {data: 'doi'},
+          {data: 'title'},
+          {data: 'year'},
+          {data: 'url'},
+        ],
+      });
+
+$('#data tbody').on('click', '.getAuthors', function () {
+    if($(this).hasClass('selectedpop')) {
+     deselectRel($(this));
+     document.getElementById('content').style.opacity = "100";
+      document.getElementById('content').style.pointerEvents = "auto";
+      $('.authCentering').hide();                
+    } else {
+      ('authCentering').css('display', 'flex'); 
+      document.getElementById('content').style.opacity = "50%";
+      document.getElementById('content').style.pointerEvents = "none";
+      var ID = BGBMCoretable.row($(this).parents('tr')).data().doi;
+        const s = JSON.stringify(["get_authors", ID]);  
+        $.ajax({
+            url:"{{url_for('anetz.Articles')}}",
+            type:"POST",
+            contentType: "application/json",
+            data: JSON.stringify(s),
+            complete: function(end){
+              authorsTable.ajax.reload();           
+            },
+          }); 
+     $(this).addClass('selectedpop');
+     $('.authPop').slideFadeToggle();
+    }
+    return false;
+  });
+  
+//authors table
+  var authorsTable = $('#authorTab').DataTable({
+      ajax: '/api/get_authors',
+      ServerSide: true,
+      processing:true,
+      
+      columns: [
+        {data: 'orchID'},
+        {data: 'Author'},
+      ],
+    }); 
+
+    function deselectAuth(e) {
+  $('.authPop').slideFadeToggle(function() {
+    e.removeClass('selectedpop');
+    document.getElementById('content').style.opacity = "100";
+    document.getElementById('content').style.pointerEvents = "auto";
+  });    
+}
+
+$('#closeAuthors').on('click', function() {
+  deselectAuth($('.getAuthors'));
+  });
+
+
+    });
+
+function openNav() {
+  document.getElementById("mySidenav").style.width = "400px";
+}
+
+function closeNav() {
+  document.getElementById("mySidenav").style.width = "0";
+}
+  </script>
+
+<!--{% endblock %}-->
