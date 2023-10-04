@@ -10,7 +10,7 @@
   + Build Cooperated-Author-Network (with depth-search and multiple different presentations )
   + Build Article-Network (with depth-search and multiple different presentations )
   
-## Teckstack
+## Techstack
 ![teck](/img/umsetzung.png 'teck')
 
 ## Mock-Ups
